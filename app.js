@@ -3,9 +3,10 @@ const cors = require("cors");
 const redis = require("redis");
 const mysql = require("mysql2");
 const config = require("./config.js");
+require("express-async-errors");
 
 const app = express();
-app.use(cors());
+const router = express.Router();
 
 // generate response
 function genResponse(code, data = null) {
@@ -19,10 +20,10 @@ function genResponse(code, data = null) {
   return { code, msg, data };
 }
 
-app.get("/", (req, res) => {
+router.get("/", (req, res) => {
   const client = redis.createClient(config.redis);
   client.on("error", (err) => {
-    console.info("object", err);
+    console.info("redis onerror:", err);
     return res.json(genResponse(1002));
   });
 
@@ -33,21 +34,26 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/users", (req, res) => {
+router.get("/users", (req, res) => {
   const db = mysql.createConnection(config.mysql);
   const sql = "select * from `users`";
   db.query(sql, (err, results, fields) => {
-    if (err) {
-      console.log("err:", err);
-      return res.json(genResponse(1001));
-    }
     return res.json(genResponse(0, results));
   });
 });
 
-// error handler
-// app.use((err, req, res) => res.json({ code: 500, msg: "server error" }));
+// cors
+app.use(cors());
 
-app.listen(config.port, () =>
-  console.log("Server is started on port " + config.port)
-);
+// routers
+app.use(router);
+
+// error handler
+app.use((err, req, res, next) => {
+  res.send(genResponse(1003, err.message));
+});
+
+// start server
+app.listen(config.port, () => {
+  console.log("Server is started on port " + config.port);
+});

@@ -1,17 +1,14 @@
 version: "3"
 
 networks:
-  - dc_express
-
-volumes:
-  - redis_data:
-  - mysql_data:
+  dce:
 
 services:
   web:
     build: .
+    container_name: dce_web
     networks:
-      - dc_express
+      - dce
     ports:
       - "5555:5555"
     depends_on:
@@ -19,14 +16,29 @@ services:
       - redis
 
   redis:
+    image: redis:6.2
+    container_name: dce_redis
+    command: redis-server /usr/local/etc/redis/redis.conf
     networks:
-      - dc_express
+      - dce
     ports:
       - "6379:6379"
+    volumes:
+      - ./redis_data:/data
+      - ./build/redis.conf:/usr/local/etc/redis/redis.conf
 
   mysql:
     image: mysql:5.7
+    container_name: dce_mysql
     networks:
-      - dc_express
+      - dce
     ports:
       - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql # 将mysql数据映射到当前目录的 mysql_data 中
+      - ./build/mysql:/docker-entrypoint-initdb.d # 初始化:需要执行的sql文件
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mytest
+      MYSQL_USER: mytest
+      MYSQL_PWSSWORD: 123456

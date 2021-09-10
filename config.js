@@ -6,7 +6,7 @@ module.exports = {
 
   // redis server
   redis: {
-    host: "localhost",
+    host: "dce_redis", // docker-compose.yaml 中 redis 服务的的 container_name
     port: "6379",
     password: "123456",
     connect_timeout: 3000,
@@ -14,7 +14,7 @@ module.exports = {
 
   // mysql server
   mysql: {
-    host: "localhost",
+    host: "dce_mysql", // docker-compose.yaml 中 mysql 服务的 container_name
     password: "root",
     port: 3306,
     user: "root",
