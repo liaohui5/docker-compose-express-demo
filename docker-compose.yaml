@@ -1,7 +1,32 @@
 version: "3"
 
+networks:
+  - dc_express
+
+volumes:
+  - redis_data:
+  - mysql_data:
+
 services:
   web:
+    build: .
+    networks:
+      - dc_express
+    ports:
+      - "5555:5555"
+    depends_on:
+      - mysql
+      - redis
+
   redis:
+    networks:
+      - dc_express
+    ports:
+      - "6379:6379"
+
   mysql:
     image: mysql:5.7
+    networks:
+      - dc_express
+    ports:
+      - "3306:3306"
